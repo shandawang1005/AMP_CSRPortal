@@ -70,7 +70,24 @@ const createVehiclesAndTickets = async (clients) => {
         const vehicleCount = faker.number.int({ min: 1, max: 2 });
         const ticketCount = faker.number.int({ min: 1, max: 3 });
 
+
         for (let i = 0; i < vehicleCount; i++) {
+            const subscriptionType = faker.helpers.arrayElement(["monthly", "payPerWash"]);
+
+            const washHistory = [];
+            const washCount = faker.number.int({ min: 1, max: 5 });
+            for (let j = 0; j < washCount; j++) {
+                const date = faker.date.recent({ days: 30 });
+                const orderNumber = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, "0")}${date.getDate().toString().padStart(2, "0")}-${faker.number.int({ min: 1000, max: 9999 })}`;
+
+                washHistory.push({
+                    date: faker.date.recent({ days: 30 }),
+                    service: faker.helpers.arrayElement(["Basic Wash", "Premium Wash", "Deluxe Wash"]),
+                    price: subscriptionType === "payPerWash" ? -7 : null,
+                    orderNumber: orderNumber, //20250521-1234
+                });
+            }
+
             vehicles.push({
                 client: client._id,
                 make: faker.vehicle.manufacturer(),
@@ -78,10 +95,11 @@ const createVehiclesAndTickets = async (clients) => {
                 year: faker.date.past({ years: 10 }).getFullYear(),
                 color: faker.vehicle.color(),
                 licensePlate: faker.vehicle.vrm() || faker.string.alphanumeric(7).toUpperCase(),
-                vin: faker.vehicle.vin() || faker.string.alphanumeric(17).toUpperCase()
+                vin: faker.vehicle.vin() || faker.string.alphanumeric(17).toUpperCase(),
+                subscriptionType: subscriptionType, 
+                washHistory: washHistory,  
             });
         }
-
         for (let i = 0; i < ticketCount; i++) {
             tickets.push({
                 client: client._id,

@@ -1,5 +1,6 @@
 import Client from "../models/Client.js";
 import Vehicle from "../models/Vehicle.js";
+import mongoose from "mongoose";
 // GET /api/clients?page=1&limit=10
 export const getAllClients = async (req, res) => {
     try {
@@ -122,7 +123,7 @@ export const getClientById = async (req, res) => {
 // PUT /api/clients/:id
 export const updateClient = async (req, res) => {
     try {
-     
+
         const clientId = req.params.id;
         const updates = req.body;
 
@@ -207,5 +208,73 @@ export const deleteVehicle = async (req, res) => {
     } catch (error) {
         console.error("Error deleting vehicle:", error);
         res.status(500).json({ message: "Failed to delete vehicle" });
+    }
+};
+
+
+// POST /api/clients/:clientId/refill
+export const addFund = async (req, res) => {
+    try {
+        const { amount } = req.body;
+        console.log("Received request to refill balance for client:", req.params.clientId);
+        const client = await Client.findById(req.params.clientId);
+
+        if (!client) {
+            console.log("error", error)
+            return res.status(404).json({ error: "Client not found" });
+        }
+        client.balance = Number(client.balance) + Number(amount);
+        await client.save();
+
+        res.json({ message: "Balance refilled successfully", client });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to refill balance" });
+    }
+}
+
+
+// POST /api/clients/:clientId/deduct
+export const deductBalance = async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const { amount } = req.body;
+        if (!clientId || !amount) {
+            return res.status(400).json({ message: 'Missing clientId or amount' });
+        }
+        const client = await Client.findById(clientId);
+        if (!client) {
+            return res.status(404).json({ message: "Client not found" });
+        }
+
+        if (client.balance < Math.abs(amount)) {
+            return res.status(400).json({ message: "Insufficient balance" });
+        }
+        client.balance += amount; //The reverse amount is on the frontend side, no need for reverse
+        await client.save();
+
+        res.json(client);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to process deduction" });
+    }
+};
+
+//POST /api/clients/:clientId/vehicles/:vehicleId/washHistory
+export const addWashHistory = async (req, res) => {
+    const { clientId, vehicleId } = req.params
+    const { historyData } = req.body;
+    try {
+        const vehicle = await Vehicle.findOneAndUpdate(
+            { _id: vehicleId, client: clientId }, 
+            { $push: { washHistory: historyData } }, 
+            { new: true, runValidators: true }
+        );
+
+        if (!vehicle) {
+            return res.status(404).json({ error: "Vehicle not found." });
+        }
+
+        res.status(200).json(vehicle);
+    } catch (error) {
+        res.status(500).json({ error: "Error adding wash history." });
     }
 };

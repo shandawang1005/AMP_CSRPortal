@@ -13,6 +13,13 @@ const vehicleSchema = new mongoose.Schema({
     enum: ['monthly', 'payPerWash'],
     default: 'payPerWash',
   },
+  washHistory: [
+    {
+      date: { type: Date, required: true },
+      service: { type: String, required: true },
+      price: { type: Number },  //if monthly payment, no need for price
+    },
+  ],
 }, {
   timestamps: true,
 });

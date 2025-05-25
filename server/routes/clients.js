@@ -7,7 +7,10 @@ import {
     getClientById,
     searchClients,
     updateClient,
-    updateVehicle
+    updateVehicle,
+    addFund,
+    deductBalance,
+    addWashHistory,
 } from "../controllers/clientController.js";
 import { requireAuth } from '../middleware/auth.js';
 
@@ -24,4 +27,10 @@ router.put("/:id", requireAuth, updateClient) //Update client info
 router.post("/:clientId/vehicles", requireAuth, addVehicle)//Add new Vehicle
 router.put('/:clientId/vehicles/:vehicleId', requireAuth, updateVehicle) //Update Vehicle info
 router.delete("/:clientId/vehicles/:vehicleId", requireAuth, deleteVehicle) //Delete Vehicle
+
+
+router.post("/:clientId/refill", requireAuth, addFund)//Update balance per user
+router.post("/:clientId/deduct", requireAuth, deductBalance); // Deduct balance per wash
+router.post("/:clientId/vehicles/:vehicleId/washHistory", requireAuth, addWashHistory); // Add wash history
+
 export default router;
