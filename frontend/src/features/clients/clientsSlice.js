@@ -1,6 +1,6 @@
 
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchClients, searchClients } from "./clientsThunks";
+import { fetchClients, searchClients, fetchClientById } from "./clientsThunks";
 
 const initialState = {
     clients: [],
@@ -45,6 +45,17 @@ const clientsSlice = createSlice({
             .addCase(searchClients.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            .addCase(fetchClientById.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchClientById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.selectedClient = action.payload; 
+            })
+            .addCase(fetchClientById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     },
 });

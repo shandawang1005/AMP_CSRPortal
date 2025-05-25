@@ -110,7 +110,10 @@ export default function ClientDetail() {
         {/* Vehicles Section */}
         <div className="mb-6 p-4 bg-white shadow-md rounded-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold mb-2">Vehicles  ( To test deduction per car wash, please update the Subscription Method to Pay Per Wash under edit. )</h3>
+            <h3 className="text-xl font-semibold mb-2">
+              Vehicles ( To test deduction per car wash, please update the
+              Subscription Method to Pay Per Wash under edit. )
+            </h3>
             <CreateVehicle
               clientId={selectedClient._id}
               onVehicleCreated={handleVehicleCreated}

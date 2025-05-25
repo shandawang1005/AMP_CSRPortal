@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { fetchCurrentUser } from "./features/auth/authThunks";
 
 import LoginGuard from "./guards/LoginGuard";
-
+import ClientDetail from "./components/ClientDetail";
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
@@ -27,6 +27,7 @@ export default function App() {
         <main style={{ padding: "1rem" }}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/client/:id" element={<ClientDetail />} />
             <Route
               path="/dashboard"
               element={

@@ -13,6 +13,28 @@ const vehicleSchema = new mongoose.Schema({
     enum: ['monthly', 'payPerWash'],
     default: 'payPerWash',
   },
+  subscriptionStartDate: {
+    type: Date,
+    default: function () {
+      return this.subscriptionType === 'monthly' ? new Date() : null;
+    },
+  },
+  subscriptionEndDate: {
+    type: Date,
+    default: function () {
+      if (this.subscriptionType === 'monthly') {
+        const startDate = new Date();
+        return new Date(startDate.setMonth(startDate.getMonth() + 1));  // Adds 1 month for monthly subscriptions
+      }
+      return null;
+    },
+  },
+  subscriptionAmount: {
+    type: Number,
+    default: function () {
+      return this.subscriptionType === 'monthly' ? 30 : null; // Set monthly cost (or whatever your cost is)
+    }
+  },
   washHistory: [
     {
       date: { type: Date, required: true },

@@ -11,7 +11,7 @@ import Ticket from "../models/Ticket.js";
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGO_URI || "mongodb://localhost:27017/localDB";
+const MONGODB_URI = process.env.MONGO_URI
 
 const connectDB = async () => {
     try {
@@ -70,9 +70,18 @@ const createVehiclesAndTickets = async (clients) => {
         const vehicleCount = faker.number.int({ min: 1, max: 2 });
         const ticketCount = faker.number.int({ min: 1, max: 3 });
 
-
         for (let i = 0; i < vehicleCount; i++) {
             const subscriptionType = faker.helpers.arrayElement(["monthly", "payPerWash"]);
+            const currentDate = new Date();
+            let startDate = null;
+            let endDate = null;
+
+            if (subscriptionType === "monthly") {
+                startDate = currentDate;
+                endDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1)); // Add 1 month for end date
+            }
+
+            const monthlyCost = subscriptionType === "monthly" ? 30 : null;
 
             const washHistory = [];
             const washCount = faker.number.int({ min: 1, max: 5 });
@@ -96,8 +105,11 @@ const createVehiclesAndTickets = async (clients) => {
                 color: faker.vehicle.color(),
                 licensePlate: faker.vehicle.vrm() || faker.string.alphanumeric(7).toUpperCase(),
                 vin: faker.vehicle.vin() || faker.string.alphanumeric(17).toUpperCase(),
-                subscriptionType: subscriptionType, 
-                washHistory: washHistory,  
+                subscriptionType: subscriptionType,
+                subscriptionStartDate: startDate,
+                subscriptionEndDate: endDate,
+                subscriptionAmount: monthlyCost,
+                washHistory: washHistory,
             });
         }
         for (let i = 0; i < ticketCount; i++) {
