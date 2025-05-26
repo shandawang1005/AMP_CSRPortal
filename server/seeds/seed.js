@@ -78,7 +78,8 @@ const createVehiclesAndTickets = async (clients) => {
 
             if (subscriptionType === "monthly") {
                 startDate = currentDate;
-                endDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1)); // Add 1 month for end date
+                endDate = new Date(startDate); 
+                endDate.setMonth(endDate.getMonth() + 1)
             }
 
             const monthlyCost = subscriptionType === "monthly" ? 30 : null;

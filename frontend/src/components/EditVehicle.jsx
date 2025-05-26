@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import Modal from "./Modal";
+import { updateClientBalance } from "../features/clients/clientsThunks";
+import { addWashHistory } from "../features/vehicles/vehiclesThunks";
 
 const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -13,14 +15,51 @@ const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
     color: vehicle.color,
     vin: vehicle.vin,
   });
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const wasPayPerWash = vehicle.subscriptionType === "payPerWash";
+    const nowMonthly = formData.subscriptionType === "monthly";
+
+    if (wasPayPerWash && nowMonthly) {
+      const now = new Date();
+      const nextMonth = new Date(now);
+      const updatedData = {
+        ...formData,
+        subscriptionStartDate: null,
+        subscriptionEndDate: null,
+        subscriptionAmount: 30,
+      };
+      nextMonth.setMonth(now.getMonth() + 1);
+
+      updatedData.subscriptionStartDate = now.toISOString();
+      updatedData.subscriptionEndDate = nextMonth.toISOString();
+
+      await dispatch(updateClientBalance({ clientId, amount: -30 }));
+      await dispatch(
+        addWashHistory({
+          clientId,
+          vehicleId: vehicle._id,
+          historyData: {
+            date: now,
+            service: "Subscription Upgrade",
+            price: -30,
+            orderNumber: `${now.getFullYear()}${(now.getMonth() + 1)
+              .toString()
+              .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}-${
+              Math.floor(Math.random() * 9000) + 1000
+            }`,
+          },
+        })
+      );
+    }
     onUpdate(vehicle._id, formData);
     setIsEditing(false);
   };

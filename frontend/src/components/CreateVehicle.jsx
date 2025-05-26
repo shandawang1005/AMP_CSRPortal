@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import Modal from "./Modal";
-import { createVehicle } from "../features/vehicles/vehiclesThunks"; 
+import { createVehicle } from "../features/vehicles/vehiclesThunks";
+import { updateClientBalance } from "../features/clients/clientsThunks";
 
 const CreateVehicle = ({ clientId, onVehicleCreated }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -15,8 +15,10 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
     color: "",
     vin: "",
   });
-
-  const dispatch = useDispatch(); 
+  const { selectedClient, loading, error } = useSelector(
+    (state) => state.clients
+  );
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,13 +27,27 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    //test balance
+    if (formData.subscriptionType === "monthly") {
+      const requiredAmount = 30;
+      const currentBalance = selectedClient.balance;
+
+      if (currentBalance < requiredAmount) {
+        alert("Insufficient balance to create a monthly subscription vehicle.");
+        return;
+      }
+
+      await dispatch(
+        updateClientBalance({ clientId, amount: -requiredAmount })
+      );
+    }
     try {
-    
       const response = await dispatch(
         createVehicle({ clientId, vehicleData: formData })
       );
       if (response.meta.requestStatus === "fulfilled") {
-        onVehicleCreated(); 
+        onVehicleCreated();
         setFormData({
           make: "",
           model: "",
@@ -41,7 +57,7 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
           color: "",
           vin: "",
         });
-        setIsCreating(false); 
+        setIsCreating(false);
       }
     } catch (error) {
       console.error("Error creating vehicle:", error);

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,6 +14,7 @@ import VehicleDetails from "./VehicleDetails";
 import CreateVehicle from "./CreateVehicle";
 import ContactInfoModal from "../components/ContactInfoModal";
 import AccountStatus from "./AccountStatus";
+import AddTicketModal from "./AddTicketModal";
 
 export default function ClientDetail() {
   const { id } = useParams();
@@ -38,6 +39,9 @@ export default function ClientDetail() {
   };
 
   const handleVehicleCreated = () => {
+    dispatch(fetchClientById(id));
+  };
+  const handleTicketCreated = () => {
     dispatch(fetchClientById(id));
   };
   const handleUpdateVehicle = (vehicleId, updatedData) => {
@@ -138,6 +142,10 @@ export default function ClientDetail() {
         {/* Tickets Section */}
         <div className="mb-6 p-4 bg-white shadow-md rounded-lg">
           <h3 className="text-xl font-semibold mb-2">Tickets</h3>
+          <AddTicketModal
+            clientId={selectedClient._id}
+            onTicketCreated={handleTicketCreated}
+          />
           <table className="min-w-full table-auto">
             <thead>
               <tr>
@@ -149,7 +157,14 @@ export default function ClientDetail() {
               {tickets?.length > 0 ? (
                 tickets.map((t) => (
                   <tr key={t._id}>
-                    <td className="px-4 py-2">{t.subject}</td>
+                    <td className="px-4 py-2">
+                      <Link
+                        to={`/tickets/${t._id}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {t.subject}
+                      </Link>
+                    </td>
                     <td className="px-4 py-2">{t.status}</td>
                   </tr>
                 ))

@@ -38,7 +38,6 @@ export const updateVehicle = createAsyncThunk(
                 `/clients/${clientId}/vehicles/${vehicleId}`,
                 updatedData
             );
-
             dispatch(updateVehicleInList({ clientId, vehicleId, updatedVehicle: response.data }))
             return response.data;
         } catch (error) {
@@ -64,13 +63,13 @@ export const deleteVehicle = createAsyncThunk(
 
 // add car wash history in specific car (with deduction of balance)
 export const addWashHistory = createAsyncThunk(
-  "vehicles/addWashHistory",
-  async ({ clientId, vehicleId, historyData }, { rejectWithValue }) => {
-    try {
-      const response = await api.post(`/clients/${clientId}/vehicles/${vehicleId}/washHistory`, { historyData });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
+    "vehicles/addWashHistory",
+    async ({ clientId, vehicleId, historyData }, { rejectWithValue }) => {
+        try {
+            const response = await api.post(`/clients/${clientId}/vehicles/${vehicleId}/washHistory`, { historyData });
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
     }
-  }
 );

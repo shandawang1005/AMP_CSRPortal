@@ -6,6 +6,7 @@ import { fetchCurrentUser } from "./features/auth/authThunks";
 
 import LoginGuard from "./guards/LoginGuard";
 import ClientDetail from "./components/ClientDetail";
+import TicketDetail from "./components/TicketDetail";
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
@@ -27,17 +28,15 @@ export default function App() {
         <main style={{ padding: "1rem" }}>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/client/:id" element={<ClientDetail />} />
-            <Route
-              path="/dashboard"
-              element={
-                <LoginGuard user={user}>
-                  <Dashboard />
-                </LoginGuard>
-              }
-            />
 
-            {/* fallback route: anything else goes to NotFound */}
+            {/* Protected routes group */}
+            <Route element={<LoginGuard user={user} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/client/:id" element={<ClientDetail />} />
+              <Route path="/tickets/:ticketId" element={<TicketDetail />} />
+            </Route>
+
+            {/* fallback route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
