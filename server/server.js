@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000
 connectDB();
 
 app.use(cors({
-    origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173', // frontend URL
+    origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' || 'https://amp-csrportal.onrender.com', // frontend URL
     credentials: true,
 }));
 app.use(morgan("dev"));
