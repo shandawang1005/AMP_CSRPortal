@@ -8,4 +8,9 @@ export default defineConfig({
       '/api': 'http://localhost:5000',
     },
   },
+  preview: {
+    host: true,
+    port: 4173,
+    allowedHosts: ['amp-csrportal.onrender.com'],
+  },
 });
