@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import EditVehicle from "./EditVehicle";
 import DeleteVehicle from "./DeleteVehicle";
 import HistoryModal from "../components/HistoryModal";
+import TransferSubscriptionModal from "./TransferSubscriptionModal";
 import {
   fetchClientById,
   updateClientBalance,
@@ -13,8 +14,13 @@ const VehicleDetails = ({ vehicle, onUpdate, onDelete, selectedClient }) => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const updatedVehicle = useSelector((state) =>
+    state.clients.selectedClient.vehicles.find((v) => v._id === vehicle._id)
+  );
   const [amount, setAmount] = useState(0);
   const [message, setMessage] = useState("");
+
   const handleHistoryModalOpen = () => {
     setIsHistoryModalOpen(true);
   };
@@ -90,45 +96,84 @@ const VehicleDetails = ({ vehicle, onUpdate, onDelete, selectedClient }) => {
               <th className="px-4 py-2 text-left">Color</th>
               <th className="px-4 py-2 text-left">VIN</th>
               <th className="px-4 py-2 text-left">Subscription Method</th>
+              <th className="px-4 py-2 text-left">Subscription Start</th>
+              <th className="px-4 py-2 text-left">Subscription End</th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-t">
               <td className="px-6 py-4 text-sm text-gray-700">
-                {vehicle.make}
+                {updatedVehicle.make}
               </td>
               <td className="px-6 py-4 text-sm text-gray-700">
-                {vehicle.model}
+                {updatedVehicle.model}
               </td>
               <td className="px-6 py-4 text-sm text-gray-700">
-                {vehicle.year}
+                {updatedVehicle.year}
               </td>
               <td className="px-6 py-4 text-sm text-gray-700">
-                {vehicle.licensePlate}
+                {updatedVehicle.licensePlate}
               </td>
               <td className="px-6 py-4 text-sm text-gray-700">
-                {vehicle.color}
+                {updatedVehicle.color}
               </td>
               <td className="px-6 py-4 text-sm text-gray-700">
-                {"*****" + vehicle.vin.slice(-5)}
+                {"*****" + updatedVehicle.vin.slice(-5)}
               </td>
               <td className="px-6 py-4 text-sm text-gray-700">
-                {vehicle.subscriptionType === "monthly"
+                {updatedVehicle.subscriptionType === "monthly"
                   ? "Monthly"
                   : "Pay Per Wash"}
+              </td>
+              <td className="px-6 py-4 text-sm text-gray-700">
+                {updatedVehicle.subscriptionType === "monthly" &&
+                vehicle.subscriptionStartDate
+                  ? new Date(
+                      updatedVehicle.subscriptionStartDate
+                    ).toLocaleDateString()
+                  : "N/A"}
+              </td>
+              <td className="px-6 py-4 text-sm text-gray-700">
+                {updatedVehicle.subscriptionType === "monthly" &&
+                vehicle.subscriptionEndDate
+                  ? new Date(
+                      updatedVehicle.subscriptionEndDate
+                    ).toLocaleDateString()
+                  : "N/A"}
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Buttons to edit, delete, and view history */}
+      {/* Buttons to edit, delete, transfer, and view history */}
       <div className="flex space-x-4">
-        <EditVehicle vehicle={vehicle} clientId={id} onUpdate={onUpdate} />
+        <EditVehicle
+          vehicle={updatedVehicle}
+          clientId={id}
+          onUpdate={onUpdate}
+        />
         <DeleteVehicle
-          vehicleId={vehicle._id}
+          vehicleId={updatedVehicle._id}
           clientId={id}
           onDelete={onDelete}
+        />
+        {updatedVehicle.subscriptionType === "monthly" && (
+          <button
+            className="text-purple-600 font-medium px-6 py-2 ml-1"
+            onClick={() => setIsTransferModalOpen(true)}
+          >
+            Transfer Subscription
+          </button>
+        )}
+        <TransferSubscriptionModal
+          isOpen={isTransferModalOpen}
+          onClose={() => setIsTransferModalOpen(false)}
+          currentVehicle={vehicle}
+          clientVehicles={selectedClient.vehicles}
+          clientId={id}
+          onUpdate={onUpdate}
+          onTransfer={() => dispatch(fetchClientById(id))}
         />
         <button
           className="text-green-600 font-medium px-6 py-2 ml-1"
@@ -139,7 +184,7 @@ const VehicleDetails = ({ vehicle, onUpdate, onDelete, selectedClient }) => {
       </div>
 
       {/* Deduct Amount Section */}
-      {vehicle.subscriptionType === "monthly" ? (
+      {updatedVehicle.subscriptionType === "monthly" ? (
         <></>
       ) : (
         <div>

@@ -64,19 +64,72 @@ export const getTicketById = async (req, res) => {
 export const updateTicket = async (req, res) => {
   try {
     const { ticketId } = req.params;
-    const updates = req.body;
 
-    const updatedTicket = await Ticket.findByIdAndUpdate(ticketId, updates, { new: true });
+    // Status only
+    if (req.body.status) {
+      const updated = await Ticket.findByIdAndUpdate(ticketId, req.body, {
+        new: true,
+        runValidators: true,
+      });
 
-    if (!updatedTicket) {
-      return res.status(404).json({ error: "Ticket not found" });
+      if (!updated) {
+        return res.status(404).json({ message: "Ticket not found" });
+      }
+
+      return res.json(updated);
+    }
+    
+    //Add comments
+    if (req.body.text && req.body.author) {
+      const updated = await Ticket.findByIdAndUpdate(
+        ticketId,
+        {
+          $push: {
+            comments: {
+              text: req.body.text,
+              author: req.user._id,
+              createdAt: new Date(),
+            },
+          },
+        },
+        { new: true, runValidators: true }
+      );
+      if (!updated) {
+        return res.status(404).json({ message: "Ticket not found" });
+      }
+
+      return res.json(updated);
     }
 
-    res.json(updatedTicket);
+    //Delete the ticket
+    if (typeof req.body.deleteCommentAt === "number") {
+      const ticket = await Ticket.findById(ticketId);
+      if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+
+      ticket.comments.splice(req.body.deleteCommentAt, 1);
+      await ticket.save();
+      return res.json(ticket);
+    }
+
+    // update comment itself
+    if (
+      typeof req.body.newText === "string"
+    ) {
+      const ticket = await Ticket.findById(ticketId);
+      if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+
+      ticket.comments[req.body.updateCommentAt].text = req.body.newText;
+      await ticket.save();
+      return res.json(ticket);
+    }
+
+    res.status(400).json({ message: "Invalid update payload." });
   } catch (err) {
-    res.status(500).json({ error: "Failed to update ticket" });
+    console.error("Error updating ticket:", err);
+    res.status(500).json({ message: "Failed to update ticket" });
   }
 };
+
 
 
 export const deleteTicket = async (req, res) => {

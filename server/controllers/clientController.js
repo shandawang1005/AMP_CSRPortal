@@ -176,11 +176,11 @@ export const addVehicle = async (req, res) => {
 export const updateVehicle = async (req, res) => {
     try {
         const { clientId, vehicleId } = req.params;
-        const { make, model, year, licensePlate, subscriptionType, color, vin } = req.body;
+        const { make, model, year, licensePlate, subscriptionType, color, vinsubscriptionType, subscriptionStartDate, subscriptionEndDate, subscriptionAmount, } = req.body;
 
         const vehicle = await Vehicle.findOneAndUpdate(
             { _id: vehicleId, client: clientId },
-            { make, model, year, licensePlate, subscriptionType, color, vin },
+            { make, model, year, licensePlate, subscriptionType, color, vinsubscriptionType, subscriptionStartDate, subscriptionEndDate, subscriptionAmount, },
             { new: true, runValidators: true }
         );
         if (!vehicle) {
@@ -216,7 +216,6 @@ export const deleteVehicle = async (req, res) => {
 export const addFund = async (req, res) => {
     try {
         const { amount } = req.body;
-        console.log("Received request to refill balance for client:", req.params.clientId);
         const client = await Client.findById(req.params.clientId);
 
         if (!client) {
@@ -264,8 +263,8 @@ export const addWashHistory = async (req, res) => {
     const { historyData } = req.body;
     try {
         const vehicle = await Vehicle.findOneAndUpdate(
-            { _id: vehicleId, client: clientId }, 
-            { $push: { washHistory: historyData } }, 
+            { _id: vehicleId, client: clientId },
+            { $push: { washHistory: historyData } },
             { new: true, runValidators: true }
         );
 
