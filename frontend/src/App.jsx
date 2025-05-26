@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { fetchCurrentUser } from "./features/auth/authThunks";
-
+import Redirector from "./components/Redirector";
 import LoginGuard from "./guards/LoginGuard";
 import ClientDetail from "./components/ClientDetail";
 import TicketDetail from "./components/TicketDetail";
@@ -27,6 +27,7 @@ export default function App() {
         <Navbar />
         <main style={{ padding: "1rem" }}>
           <Routes>
+            <Route path="/" element={<Redirector />} />
             <Route path="/login" element={<Login />} />
 
             {/* Protected routes group */}
