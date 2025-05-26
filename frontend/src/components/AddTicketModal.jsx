@@ -2,6 +2,11 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Modal from "./Modal";
 import { createTicket } from "../features/tickets/ticketThunks";
+import {
+  isRequired,
+  minLength,
+  composeValidators,
+} from "../utils/validators.js";
 
 export default function AddTicketModal({ clientId, onTicketCreated }) {
   const [isCreating, setIsCreating] = useState(false);
@@ -10,17 +15,34 @@ export default function AddTicketModal({ clientId, onTicketCreated }) {
     status: "open",
     description: "",
   });
+  const [errors, setErrors] = useState({});
 
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: null }));
   };
+  const validate = () => {
+    const newErrors = {};
+    const subjectValidator = composeValidators(isRequired, minLength(3));
+    const descriptionValidator = composeValidators(isRequired, minLength(5));
 
+    newErrors.subject = subjectValidator(formData.subject);
+    newErrors.description = descriptionValidator(formData.description);
+
+    // filter out nulls
+    Object.keys(newErrors).forEach(
+      (key) => newErrors[key] === null && delete newErrors[key]
+    );
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!validate()) return;
     try {
       const response = await dispatch(
         createTicket({
@@ -72,8 +94,10 @@ export default function AddTicketModal({ clientId, onTicketCreated }) {
                 value={formData.subject}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
-                required
               />
+              {errors.subject && (
+                <p className="text-red-500 text-sm mt-1">{errors.subject}</p>
+              )}
             </div>
 
             <div className="mb-4">
@@ -85,7 +109,6 @@ export default function AddTicketModal({ clientId, onTicketCreated }) {
                 value={formData.status}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
-                required
               >
                 <option value="open">Open</option>
                 <option value="in_progress">In Progress</option>
@@ -104,6 +127,11 @@ export default function AddTicketModal({ clientId, onTicketCreated }) {
                 className="w-full border border-gray-300 rounded px-3 py-2"
                 rows="4"
               />
+              {errors.description && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.description}
+                </p>
+              )}
             </div>
 
             <button

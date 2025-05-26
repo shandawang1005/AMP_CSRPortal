@@ -16,6 +16,9 @@ const clientSchema = new mongoose.Schema({
     enum: ['active', 'overdue'],
     default: 'active',
   },
+  lastChargedAt: {
+    type: Date
+  }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

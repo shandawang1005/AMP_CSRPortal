@@ -3,16 +3,39 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../features/auth/authThunks";
 import { clearError } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
-
+import {
+  isRequired,
+  isEmail,
+  minLength,
+  composeValidators,
+} from "../utils/validators";
 export default function Login() {
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
 
+  const validate = () => {
+    const emailValidator = composeValidators(isRequired, isEmail);
+    const passwordValidator = composeValidators(isRequired, minLength(6));
+
+    const newErrors = {
+      email: emailValidator(email),
+      password: passwordValidator(password),
+    };
+
+    Object.keys(newErrors).forEach(
+      (key) => newErrors[key] === null && delete newErrors[key]
+    );
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!validate()) return;
     dispatch(loginUser({ email, password }));
   };
   useEffect(() => {
@@ -45,12 +68,15 @@ export default function Login() {
             onChange={(e) => {
               setEmail(e.target.value);
               if (error) dispatch(clearError());
+              setErrors((prev) => ({ ...prev, email: null }));
             }}
-            required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your email"
             autoComplete="email"
           />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          )}
         </div>
 
         <div className="mb-6">
@@ -67,12 +93,15 @@ export default function Login() {
             onChange={(e) => {
               setPassword(e.target.value);
               if (error) dispatch(clearError());
+              setErrors((prev) => ({ ...prev, password: null }));
             }}
-            required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your password"
             autoComplete="current-password"
           />
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+          )}
         </div>
 
         <button

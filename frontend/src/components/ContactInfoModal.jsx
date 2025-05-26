@@ -1,16 +1,52 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import {
+  isRequired,
+  isEmail,
+  minLength,
+  composeValidators,
+} from "../utils/validators";
 const ContactInfoModal = ({ isOpen, onClose, initialData, onSubmit }) => {
   const [formData, setFormData] = useState(initialData);
-
+  const [errors, setErrors] = useState({});
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: null }));
+  };
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(initialData);
+      setErrors({});
+    }
+  }, [isOpen, initialData]);
+  const validate = () => {
+    const validators = {
+      firstName: composeValidators(isRequired, minLength(2)),
+      lastName: composeValidators(isRequired, minLength(2)),
+      email: composeValidators(isRequired, isEmail),
+      phone: (val) => {
+        if (!val) return null;
+        return /^\d{10}$/.test(val)
+          ? null
+          : "Phone must be 10 digits (US format)";
+      },
+    };
+
+    const newErrors = {};
+    for (let key in validators) {
+      const error = validators[key](formData[key]);
+      if (error) newErrors[key] = error;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!validate()) return;
     onSubmit(formData);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -38,6 +74,9 @@ const ContactInfoModal = ({ isOpen, onClose, initialData, onSubmit }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
             />
+            {errors.firstName && (
+              <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -50,6 +89,9 @@ const ContactInfoModal = ({ isOpen, onClose, initialData, onSubmit }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
             />
+            {errors.lastName && (
+              <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -62,6 +104,9 @@ const ContactInfoModal = ({ isOpen, onClose, initialData, onSubmit }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -74,10 +119,13 @@ const ContactInfoModal = ({ isOpen, onClose, initialData, onSubmit }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
             />
+            {errors.phone && (
+              <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Address
+              Address (Optional)
             </label>
             <input
               type="text"

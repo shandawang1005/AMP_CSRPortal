@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Modal from "./Modal";
 import { createVehicle } from "../features/vehicles/vehiclesThunks";
 import { updateClientBalance } from "../features/clients/clientsThunks";
+import { isRequired, minLength, composeValidators } from "../utils/validators";
 
 const CreateVehicle = ({ clientId, onVehicleCreated }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -15,6 +16,8 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
     color: "",
     vin: "",
   });
+  const [errors, setErrors] = useState({});
+
   const { selectedClient, loading, error } = useSelector(
     (state) => state.clients
   );
@@ -23,11 +26,32 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: null }));
   };
+  const validate = () => {
+    const validators = {
+      make: composeValidators(isRequired, minLength(2)),
+      model: composeValidators(isRequired, minLength(2)),
+      year: (val) =>
+        /^\d{4}$/.test(val) && val >= 1990 && val <= new Date().getFullYear()
+          ? null
+          : "Enter a valid year",
+      licensePlate: composeValidators(isRequired, minLength(3)),
+      vin: composeValidators(isRequired, minLength(6)), // just basic rule
+    };
 
+    const newErrors = {};
+    for (let key in validators) {
+      const error = validators[key](formData[key]);
+      if (error) newErrors[key] = error;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!validate()) return;
     //test balance
     if (formData.subscriptionType === "monthly") {
       const requiredAmount = 30;
@@ -57,6 +81,7 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
           color: "",
           vin: "",
         });
+        setErrors({});
         setIsCreating(false);
       }
     } catch (error) {
@@ -92,6 +117,9 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.make && (
+                <p className="text-red-500 text-sm mt-1">{errors.make}</p>
+              )}
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -104,6 +132,9 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.model && (
+                <p className="text-red-500 text-sm mt-1">{errors.model}</p>
+              )}
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -116,6 +147,9 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.year && (
+                <p className="text-red-500 text-sm mt-1">{errors.year}</p>
+              )}
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -128,6 +162,11 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.licensePlate && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.licensePlate}
+                </p>
+              )}
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -166,6 +205,9 @@ const CreateVehicle = ({ clientId, onVehicleCreated }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.vin && (
+                <p className="text-red-500 text-sm mt-1">{errors.vin}</p>
+              )}
             </div>
             <button
               type="submit"

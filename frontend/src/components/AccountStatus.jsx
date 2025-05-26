@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import RefillBalanceModal from "./RefillBalanceModal";
+import RedeemGiftCardModal from "./RedeemGiftCardModal";
 
 const AccountStatus = ({ selectedClient, onRecharge }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  useEffect * (() => {}, [selectedClient.balance]);
-
-  const handleRechargeClick = () => {
-    setIsModalOpen(true);
+  const [activeModal, setActiveModal] = useState(null);
+  const openModal = (type) => {
+    setActiveModal(type);
   };
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
+  const closeModal = () => {
+    setActiveModal(null);
   };
 
   return (
@@ -51,21 +50,34 @@ const AccountStatus = ({ selectedClient, onRecharge }) => {
         </p>
 
         {selectedClient.status && (
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mt-4"
-            onClick={handleRechargeClick}
-          >
-            Refill Balance
-          </button>
+          <>
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mt-4"
+              onClick={() => openModal("refill")}
+            >
+              Refill Balance
+            </button>
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mt-4 ml-2"
+              onClick={() => openModal("giftcard")}
+            >
+              Redeem Gift Card
+            </button>
+          </>
         )}
       </div>
-
       {/* Refill Balance Modal */}
       <RefillBalanceModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
+        isOpen={activeModal === "refill"}
+        onClose={closeModal}
         onRecharge={onRecharge}
       />
+      <RedeemGiftCardModal
+        isOpen={activeModal === "giftcard"}
+        onClose={closeModal}
+        onRecharge={onRecharge}
+      />
+      
     </div>
   );
 };

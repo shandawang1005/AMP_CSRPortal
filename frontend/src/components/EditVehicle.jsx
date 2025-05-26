@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import Modal from "./Modal";
 import { updateClientBalance } from "../features/clients/clientsThunks";
 import { addWashHistory } from "../features/vehicles/vehiclesThunks";
-
+import { isRequired, minLength, composeValidators } from "../utils/validators";
 const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -15,16 +15,39 @@ const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
     color: vehicle.color,
     vin: vehicle.vin,
   });
+  const [errors, setErrors] = useState({});
   const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: null }));
+  };
+  const validate = () => {
+    const validators = {
+      make: composeValidators(isRequired, minLength(2)),
+      model: composeValidators(isRequired, minLength(2)),
+      year: (val) =>
+        /^\d{4}$/.test(val) && val >= 1990 && val <= new Date().getFullYear()
+          ? null
+          : "Enter a valid year",
+      licensePlate: composeValidators(isRequired, minLength(3)),
+      vin: composeValidators(isRequired, minLength(6)),
+    };
+
+    const newErrors = {};
+    for (let key in validators) {
+      const error = validators[key](formData[key]);
+      if (error) newErrors[key] = error;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!validate()) return;
     const wasPayPerWash = vehicle.subscriptionType === "payPerWash";
     const nowMonthly = formData.subscriptionType === "monthly";
 
@@ -90,6 +113,9 @@ const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.make && (
+                <p className="text-red-500 text-sm mt-1">{errors.make}</p>
+              )}
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -102,6 +128,9 @@ const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.model && (
+                <p className="text-red-500 text-sm mt-1">{errors.model}</p>
+              )}
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -114,6 +143,9 @@ const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.year && (
+                <p className="text-red-500 text-sm mt-1">{errors.year}</p>
+              )}
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -126,6 +158,11 @@ const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.licensePlate && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.licensePlate}
+                </p>
+              )}
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -164,6 +201,9 @@ const EditVehicle = ({ vehicle, clientId, onUpdate }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+              {errors.vin && (
+                <p className="text-red-500 text-sm mt-1">{errors.vin}</p>
+              )}
             </div>
             <button
               type="submit"
