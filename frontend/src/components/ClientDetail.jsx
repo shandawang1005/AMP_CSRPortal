@@ -141,11 +141,13 @@ export default function ClientDetail() {
 
         {/* Tickets Section */}
         <div className="mb-6 p-4 bg-white shadow-md rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Tickets</h3>
-          <AddTicketModal
-            clientId={selectedClient._id}
-            onTicketCreated={handleTicketCreated}
-          />
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold mb-2">Tickets</h3>
+            <AddTicketModal
+              clientId={selectedClient._id}
+              onTicketCreated={handleTicketCreated}
+            />
+          </div>
           <table className="min-w-full table-auto">
             <thead>
               <tr>

@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 5000
 connectDB();
 
 app.use(cors({
-    origin: process.env.CLIENT_ORIGIN , // frontend URL ||'http://localhost:5173'
+    origin: 'http://localhost:5173' , // frontend URL ||process.env.CLIENT_ORIGIN
     credentials: true,
 }));
 app.use(morgan("dev"));
